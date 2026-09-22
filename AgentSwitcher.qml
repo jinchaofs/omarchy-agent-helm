@@ -16,8 +16,8 @@ import qs.Ui
 // per-agent flag table is duplicated here.
 Panel {
   id: root
-  moduleName: "jinchaofs.agent-switcher"
-  ipcTarget: "jinchaofs.agent-switcher"
+  moduleName: "jinchaofs.agent-helm"
+  ipcTarget: "jinchaofs.agent-helm"
 
   readonly property color foreground: bar ? bar.foreground : Color.foreground
   readonly property color dim: Qt.darker(foreground, 1.55)

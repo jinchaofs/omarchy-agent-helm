@@ -1,7 +1,7 @@
 # Agent Helm
 
-Bar panel for managing Omarchy's coding agents: open any installed agent,
-move the default with a radio dot, install missing ones — all from one popup.
+Agent Helm puts every coding agent in your bar: launch one, set the
+default, or install what's missing — without leaving the panel.
 
 ## Install
 
@@ -14,7 +14,7 @@ Then press `SUPER + A` or click the 󰚩 icon in the bar.
 ## Remove
 
 ```bash
-omarchy plugin remove jinchaofs.agent-switcher
+omarchy plugin remove jinchaofs.agent-helm
 ```
 
 Removes the widget from the bar and deletes the plugin folder. It never
@@ -52,7 +52,7 @@ default agent and installed agents are left exactly as they were.
 ## Keyboard / IPC
 
 ```bash
-omarchy-shell shell toggle jinchaofs.agent-switcher '{}'   # toggle the panel
+omarchy-shell shell toggle jinchaofs.agent-helm '{}'   # toggle the panel
 ```
 
 Bound to `SUPER + A` in `~/.config/hypr/bindings.lua`.
