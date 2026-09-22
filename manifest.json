@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "id": "jinchaofs.agent-switcher",
+  "name": "Agent Helm",
+  "version": "0.1.0",
+  "author": "jinchaofs",
+  "license": "MIT",
+  "description": "Bar panel to manage coding agents: open any installed agent, pick the default with a dot, install missing ones.",
+  "kinds": ["bar-widget"],
+  "entryPoints": {
+    "barWidget": "AgentSwitcher.qml"
+  },
+  "barWidget": {
+    "displayName": "Agent Helm",
+    "description": "Open an agent, choose the default, install missing ones — one click from the bar.",
+    "category": "AI",
+    "aliases": [
+      "helm",
+      "agent",
+      "agents",
+      "harness",
+      "ai",
+      "llm",
+      "opencode",
+      "claude",
+      "codex",
+      "pi",
+      "omp",
+      "oh-my-pi",
+      "gemini",
+      "grok",
+      "copilot",
+      "crush",
+      "cursor",
+      "cursor-agent",
+      "muse",
+      "hermes",
+      "openclaw"
+    ],
+    "allowMultiple": false
+  }
+}

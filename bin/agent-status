@@ -1,0 +1,74 @@
+#!/usr/bin/env bash
+# agent-status — machine-readable state for the Agent Helm panel.
+#
+# Output (one JSON object on stdout):
+#   {"default":"opencode","agents":[
+#     {"id":"claude","label":"Claude Code","icon":"󰛄","iconFont":"","installed":true},
+#     ...]}
+#
+# Labels/icons come from the stock menu table so the panel always matches
+# what Super+Space → Setup → Agent shows. Install detection is local-only on
+# purpose: `mise where <http:...>` (muse's backend) can stall on the network,
+# which froze this panel at "Detecting agents…". So: hermes/openclaw answer
+# through their installers (a bare `command -v` sees a cold stub), everything
+# else is a ~/.local/bin user install or a runnable binary on PATH.
+set -uo pipefail
+
+AGENTS=(pi omp opencode claude codex grok gemini openclaw hermes copilot crush cursor-agent muse)
+
+MENU=""
+for candidate in \
+  "$HOME/.config/omarchy/omarchy-menu.jsonc" \
+  "${OMARCHY_PATH:-/usr/share/omarchy}/default/omarchy/omarchy-menu.jsonc"; do
+  [[ -f $candidate ]] && MENU=$candidate && break
+done
+
+default=""
+[[ -r $HOME/.config/omarchy/defaults/agent ]] && default=$(<"$HOME/.config/omarchy/defaults/agent")
+
+user_install() {
+  [[ -x $HOME/.local/bin/$1 ]] &&
+    { [[ -L $HOME/.local/bin/$1 ]] || ! grep -q '^mise use -g' "$HOME/.local/bin/$1"; }
+}
+
+present() {
+  case "$1" in
+  # --check talks to mise/pacman; bounded so a stuck check degrades to an
+  # Install button instead of a frozen panel.
+  hermes) timeout 5 omarchy-install-hermes-cli --check &>/dev/null ;;
+  openclaw) timeout 5 omarchy-install-openclaw-cli --check &>/dev/null ;;
+  *)
+    user_install "$1" && return 0
+    # Explicit shim dir too: an unusual runtime PATH without mise shims
+    # should not report every mise-installed agent as missing.
+    [[ -x $HOME/.local/share/mise/shims/$1 ]] && return 0
+    command -v "$1" &>/dev/null
+    ;;
+  esac
+}
+
+menu_field() {
+  # menu_field <id> <label|icon|iconFont> — one stock menu entry, one field.
+  local line
+  line=$(grep -m1 "\"setup.default.agent.$1\"" "$MENU" 2>/dev/null) || line=""
+  [[ -z $line ]] && return 0
+  local value
+  value=$(sed -E "s/.*\"$2\":\"([^\"]*)\".*/\1/" <<<"$line")
+  [[ $value != "$line" ]] && printf '%s' "$value"
+}
+
+rows="[]"
+for id in "${AGENTS[@]}"; do
+  label=$(menu_field "$id" label)
+  [[ -z $label ]] && label=$id
+  icon=$(menu_field "$id" icon)
+  icon_font=$(menu_field "$id" iconFont)
+  installed=false
+  present "$id" && installed=true
+  rows=$(jq --arg id "$id" --arg label "$label" --arg icon "$icon" \
+    --arg iconFont "$icon_font" --argjson installed "$installed" \
+    '. + [{id: $id, label: $label, icon: $icon, iconFont: $iconFont, installed: $installed}]' <<<"$rows")
+done
+
+jq -n --arg default "$default" --argjson agents "$rows" \
+  '{default: $default, agents: $agents}'

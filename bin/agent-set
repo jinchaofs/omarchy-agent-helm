@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# agent-set <id> <label> — make an agent the default without launching it.
+#
+# Deliberately not omarchy-default-agent: that command installs if missing and
+# then launches, which is the install button's job. The dot in the panel only
+# moves the default.
+set -euo pipefail
+
+id="${1:?usage: agent-set <id> <label>}"
+label="${2:-$1}"
+
+file="$HOME/.config/omarchy/defaults/agent"
+mkdir -p "$(dirname "$file")"
+printf '%s\n' "$id" >"$file"
+
+omarchy-notification-send "Default agent" "$label is now the default"

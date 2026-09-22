@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+# agent-open <id> — launch an agent WITHOUT changing the default.
+#
+# omarchy-agent only ever launches "the current default", and the per-agent
+# flags (--auto/--yolo/--permission-mode ...) live inside it. Rather than
+# duplicate that table, put a shim ahead of it on PATH: omarchy-agent asks
+# `omarchy-default-agent` (no args) which agent to run, and the shim answers
+# the requested id for this session only.
+#
+# Deliberately NOT the earlier temp-switch of ~/.config/omarchy/defaults/agent:
+# while that file pointed at the target, the panel's status read the temp
+# value as the real default, so a plain row click looked like it had moved
+# the default. With the shim the real file is never written, so the panel,
+# menu checkmarks, and the direct-launch binding all keep showing the true
+# default for the whole session — and concurrent opens cannot race a
+# save/restore pair that no longer exists.
+set -u
+
+id="${1:?usage: agent-open <agent>}"
+
+real_default_cmd=$(command -v omarchy-default-agent) || {
+  echo "agent-open: omarchy-default-agent not found on PATH" >&2
+  exit 1
+}
+
+shim_dir=$(mktemp -d) || exit 1
+cleanup() { rm -rf "$shim_dir"; }
+trap cleanup EXIT
+
+cat >"$shim_dir/omarchy-default-agent" <<EOF
+#!/bin/bash
+# Session shim for agent-open: answer omarchy-agent's "who is the default?"
+# with the agent this session was opened as. Any other invocation (flags,
+# or \`omarchy default agent <name>\` typed inside the session) goes to the
+# real command untouched.
+if ((\$# == 0)); then
+  printf '%s\n' "$id"
+  exit 0
+fi
+exec "$real_default_cmd" "\$@"
+EOF
+chmod +x "$shim_dir/omarchy-default-agent"
+
+PATH="$shim_dir:$PATH" omarchy-agent
