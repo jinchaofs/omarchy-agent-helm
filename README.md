@@ -31,6 +31,13 @@ default agent and installed agents are left exactly as they were.
 | Right-click the bar icon | Skip the panel: open the current default immediately |
 | `Enter` / `↑` `↓` / `Esc` | Open / walk the list (wraps) / close |
 
+## License & dependencies
+
+MIT — see [LICENSE](LICENSE). No external dependencies: the plugin only
+calls commands shipped with Omarchy (`omarchy-agent`,
+`omarchy-default-agent`, `omarchy-menu.jsonc`,
+`omarchy-notification-send`).
+
 ## How it works
 
 - **State** — `bin/agent-status` emits default + install status as JSON.
