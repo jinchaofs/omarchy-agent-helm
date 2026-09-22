@@ -3,6 +3,8 @@
 Agent Helm puts every coding agent in your bar: launch one, set the
 default, or install what's missing — without leaving the panel.
 
+![Agent Helm panel](preview.png)
+
 ## Install
 
 ```bash
